@@ -100,7 +100,7 @@ class GoLogin(object):
 
     def setProfileId(self, profile_id: Union[str, None]):
         self.profile_id = profile_id
-        if self.profile_id == None:
+        if self.profile_id is None:
             return
         self.profile_path = os.path.join(self.tmpdir, "gologin_" + self.profile_id)
         self.profile_zip_path = os.path.join(
@@ -155,7 +155,7 @@ class GoLogin(object):
         proxy = self.proxy
         proxy_host = ""
         if proxy:
-            if proxy.get("mode") == None or proxy.get("mode") == "geolocation":
+            if proxy.get("mode") is None or proxy.get("mode") == "geolocation":
                 proxy["mode"] = "http"
             proxy_host = proxy.get("host")
             proxy = self.formatProxyUrl(proxy)
@@ -208,7 +208,7 @@ class GoLogin(object):
     def start(self) -> str:
         print("start")
         profile_path = self.createStartup()
-        if self.spawn_browser == True:
+        if self.spawn_browser is True:
             return self.spawnBrowser()
         return profile_path
 
@@ -243,7 +243,7 @@ class GoLogin(object):
                 proc.kill()
         self.waitUntilProfileUsing()
         self.sanitizeProfile()
-        if self.local == False:
+        if self.local is False:
             self.commitProfile()
             os.remove(self.profile_zip_path_upload)
             shutil.rmtree(self.profile_path)
@@ -309,16 +309,16 @@ class GoLogin(object):
             f"Default{SEPARATOR}GPUCache",
             f"Default{SEPARATOR}DawnCache",
             f"Default{SEPARATOR}fonts_config",
-            f"GrShaderCache",
-            f"ShaderCache",
-            f"biahpgbdmdkfgndcmfiipgcebobojjkp",
-            f"afalakplffnnnlkncjhbmahjfjhmlkal",
-            f"cffkpbalmllkdoenhmdmpbkajipdjfam",
-            f"Dictionaries",
-            f"enkheaiicpeffbfgjiklngbpkilnbkoi",
-            f"oofiananboodjbbmdelgdommihjbkfag",
-            f"SafetyTips",
-            f"fonts",
+            "GrShaderCache",
+            "ShaderCache",
+            "biahpgbdmdkfgndcmfiipgcebobojjkp",
+            "afalakplffnnnlkncjhbmahjfjhmlkal",
+            "cffkpbalmllkdoenhmdmpbkajipdjfam",
+            "Dictionaries",
+            "enkheaiicpeffbfgjiklngbpkilnbkoi",
+            "oofiananboodjbbmdelgdommihjbkfag",
+            "SafetyTips",
+            "fonts",
         ]
 
         for d in remove_dirs:
@@ -370,7 +370,7 @@ class GoLogin(object):
         return json.loads(data.content.decode("utf-8"))
 
     def getProfile(self, profile_id: Union[str, None] = None) -> Dict[str, Any]:
-        profile = self.profile_id if profile_id == None else profile_id
+        profile = self.profile_id if profile_id is None else profile_id
         headers = {
             "Authorization": "Bearer " + self.access_token,
             "User-Agent": "Selenium-API",
@@ -646,18 +646,18 @@ class GoLogin(object):
         if proxy and proxy.get("mode") == "geolocation":
             proxy["mode"] = "http"
 
-        if proxy and proxy.get("mode") == None:
+        if proxy and proxy.get("mode") is None:
             proxy["mode"] = "http"
 
         self.proxy = proxy
         self.profile_name = profile.get("name")
-        if self.profile_name == None:
+        if self.profile_name is None:
             print("empty profile name")
             print("profile=", profile)
             exit()
 
         gologin = self.convertPreferences(profile)
-        if self.credentials_enable_service != None:
+        if self.credentials_enable_service is not None:
             preferences["credentials_enable_service"] = self.credentials_enable_service
         preferences["gologin"] = gologin
         pfile = open(pref_file, "w")
@@ -665,13 +665,13 @@ class GoLogin(object):
 
     def createStartup(self) -> str:
         print("createStartup", self.profile_path)
-        if self.local == False and os.path.exists(self.profile_path):
+        if self.local is False and os.path.exists(self.profile_path):
             try:
                 shutil.rmtree(self.profile_path)
             except:
                 print("error removing profile", self.profile_path)
         self.profile = self.getProfile()
-        if self.local == False:
+        if self.local is False:
             self.downloadProfileZip()
         self.updatePreferences()
 
@@ -767,7 +767,7 @@ class GoLogin(object):
             if (
                 hardwareConcurrency != "random"
                 and userAgent != "random"
-                and hardwareConcurrency != None
+                and hardwareConcurrency is not None
             ):
                 profile_options["navigator"]["hardwareConcurrency"] = (
                     hardwareConcurrency
@@ -775,7 +775,7 @@ class GoLogin(object):
             if (
                 deviceMemory != "random"
                 and userAgent != "random"
-                and deviceMemory != None
+                and deviceMemory is not None
             ):
                 profile_options["navigator"]["deviceMemory"] = deviceMemory
 
@@ -817,7 +817,7 @@ class GoLogin(object):
         return response.get("id")
 
     def delete(self, profile_id: Union[str, None] = None) -> None:
-        profile = self.profile_id if profile_id == None else profile_id
+        profile = self.profile_id if profile_id is None else profile_id
         requests.delete(API_URL + "/browser/" + profile, headers=self.headers())
 
     def update(self, options: Dict[str, Any]):
@@ -888,7 +888,7 @@ class GoLogin(object):
     def clearCookies(self, profile_id: Union[str, None] = None) -> Dict[str, str]:
         self.cleaningLocalCookies = True
 
-        profile = self.profile_id if profile_id == None else profile_id
+        profile = self.profile_id if profile_id is None else profile_id
         resp = requests.post(
             API_URL + "/browser/" + profile + "/cookies?cleanCookies=true",
             headers=self.headers(),
@@ -901,7 +901,7 @@ class GoLogin(object):
             return {"status": "failure"}
 
     async def normalizePageView(self, page) -> None:
-        if self.preferences.get("screenWidth") == None:
+        if self.preferences.get("screenWidth") is None:
             self.profile = self.getProfile()
             self.preferences["screenWidth"] = int(
                 self.profile.get("navigator").get("resolution").split("x")[0]
