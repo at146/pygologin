@@ -4,6 +4,7 @@ import os
 import stat
 import sys
 import shutil
+from typing import Any, Dict, Union
 import requests
 import zipfile
 import subprocess
@@ -34,22 +35,22 @@ class ProtocolException(Exception):
 
 
 class GoLogin(object):
-    def __init__(self, options):
-        self.access_token = options.get("token")
-        self.profile_id = options.get("profile_id")
+    def __init__(self, options: Dict[str, Any]) -> None:
+        self.access_token: Union[str, None] = options.get("token")
+        self.profile_id: Union[str, None] = options.get("profile_id")
         self.tmpdir = options.get("tmpdir", tempfile.gettempdir())
-        self.address = options.get("address", "127.0.0.1")
+        self.address: str = options.get("address", "127.0.0.1")
         self.extra_params = options.get("extra_params", [])
-        self.port = options.get("port", 3500)
-        self.local = options.get("local", False)
-        self.spawn_browser = options.get("spawn_browser", True)
+        self.port: int = options.get("port", 3500)
+        self.local: bool = options.get("local", False)
+        self.spawn_browser: bool = options.get("spawn_browser", True)
         self.credentials_enable_service = options.get("credentials_enable_service")
-        self.cleaningLocalCookies = options.get("cleaningLocalCookies", False)
-        self.uploadCookiesToServer = options.get("uploadCookiesToServer", False)
-        self.writeCookiesFromServer = options.get("writeCookiesFromServer", False)
-        self.executablePath = ""
-        self.is_cloud_headless = options.get("is_cloud_headless", True)
-        self.is_new_cloud_browser = options.get("is_new_cloud_browser", True)
+        self.cleaningLocalCookies: bool = options.get("cleaningLocalCookies", False)
+        self.uploadCookiesToServer: bool = options.get("uploadCookiesToServer", False)
+        self.writeCookiesFromServer: bool = options.get("writeCookiesFromServer", False)
+        self.executablePath: str = ""
+        self.is_cloud_headless: bool = options.get("is_cloud_headless", True)
+        self.is_new_cloud_browser: bool = options.get("is_new_cloud_browser", True)
 
         home = str(pathlib.Path.home())
         browser_gologin = os.path.join(home, ".gologin", "browser")
@@ -97,7 +98,7 @@ class GoLogin(object):
     def __exit__(self, *args, **kwargs):
         self.stop()
 
-    def setProfileId(self, profile_id):
+    def setProfileId(self, profile_id: Union[str, None]):
         self.profile_id = profile_id
         if self.profile_id == None:
             return
@@ -109,7 +110,7 @@ class GoLogin(object):
             self.tmpdir, "gologin_" + self.profile_id + "_upload.zip"
         )
 
-    def loadExtensions(self):
+    def loadExtensions(self) -> Union[str, None]:
         profile = self.profile
         chromeExtensions = profile.get("chromeExtensions")
         extensionsManagerInst = ExtensionsManager()
@@ -150,7 +151,7 @@ class GoLogin(object):
         else:
             return pathToExt
 
-    def spawnBrowser(self):
+    def spawnBrowser(self) -> str:
         proxy = self.proxy
         proxy_host = ""
         if proxy:
@@ -204,14 +205,14 @@ class GoLogin(object):
                 time.sleep(1)
         return url
 
-    def start(self):
+    def start(self) -> str:
         print("start")
         profile_path = self.createStartup()
         if self.spawn_browser == True:
             return self.spawnBrowser()
         return profile_path
 
-    def zipdir(self, path, ziph):
+    def zipdir(self, path, ziph) -> None:
         for root, dirs, files in os.walk(path):
             for file in files:
                 path = os.path.join(root, file)
@@ -224,7 +225,7 @@ class GoLogin(object):
                 except:
                     continue
 
-    def waitUntilProfileUsing(self, try_count=0):
+    def waitUntilProfileUsing(self, try_count=0) -> None:
         if try_count > 10:
             return
         time.sleep(1)
@@ -236,7 +237,7 @@ class GoLogin(object):
                 print("waiting chrome termination")
                 self.waitUntilProfileUsing(try_count + 1)
 
-    def stop(self):
+    def stop(self) -> None:
         for proc in psutil.process_iter(["pid"]):
             if proc.info.get("pid") == self.pid:
                 proc.kill()
@@ -248,7 +249,7 @@ class GoLogin(object):
             shutil.rmtree(self.profile_path)
         print("profile stopped")
 
-    def commitProfile(self):
+    def commitProfile(self) -> None:
         print("commitProfile")
         zipf = zipfile.ZipFile(self.profile_zip_path_upload, "w", zipfile.ZIP_DEFLATED)
         self.zipdir(self.profile_path, zipf)
@@ -268,7 +269,7 @@ class GoLogin(object):
         )
         print("commitProfile completed", data)
 
-    def commitProfileOld(self):
+    def commitProfileOld(self) -> None:
         zipf = zipfile.ZipFile(self.profile_zip_path_upload, "w", zipfile.ZIP_DEFLATED)
         self.zipdir(self.profile_path, zipf)
         zipf.close()
@@ -288,7 +289,7 @@ class GoLogin(object):
 
         # print('commit profile complete')
 
-    def sanitizeProfile(self):
+    def sanitizeProfile(self) -> None:
         if self.cleaningLocalCookies:
             path_to_coockies = os.path.join(
                 self.profile_path, "Default", "Network", "Cookies"
@@ -328,7 +329,7 @@ class GoLogin(object):
                 except:
                     continue
 
-    def formatProxyUrl(self, proxy):
+    def formatProxyUrl(self, proxy: Dict[str, Any]):
         return (
             proxy.get("mode", "http")
             + "://"
@@ -368,7 +369,7 @@ class GoLogin(object):
             data = requests.get(GET_TIMEZONE_URL)
         return json.loads(data.content.decode("utf-8"))
 
-    def getProfile(self, profile_id=None):
+    def getProfile(self, profile_id: Union[str, None] = None) -> Dict[str, Any]:
         profile = self.profile_id if profile_id == None else profile_id
         headers = {
             "Authorization": "Bearer " + self.access_token,
@@ -383,7 +384,7 @@ class GoLogin(object):
             raise Exception(data.get("error") + ": " + data.get("message"))
         return data
 
-    def downloadProfileZip(self):
+    def downloadProfileZip(self) -> None:
         print("downloadProfileZip")
         s3path = self.profile.get("s3Path", "")
         print("s3path", s3path)
@@ -418,7 +419,7 @@ class GoLogin(object):
         #     self.createEmptyProfile()
         #     self.extractProfileZip()
 
-    def downloadProfileZipOld(self):
+    def downloadProfileZipOld(self) -> None:
         print("downloadProfileZip")
         s3path = self.profile.get("s3Path", "")
         data = ""
@@ -461,14 +462,14 @@ class GoLogin(object):
             self.createEmptyProfile()
             self.extractProfileZip()
 
-    def uploadEmptyProfile(self):
+    def uploadEmptyProfile(self) -> None:
         print("uploadEmptyProfile")
         upload_profile = open(r"./gologin_zeroprofile.zip", "wb")
         source = requests.get(PROFILES_URL + "zero_profile.zip")
         upload_profile.write(source.content)
         upload_profile.close
 
-    def createEmptyProfile(self):
+    def createEmptyProfile(self) -> None:
         print("createEmptyProfile")
         empty_profile = "../gologin_zeroprofile.zip"
 
@@ -484,13 +485,17 @@ class GoLogin(object):
             with open(self.profile_zip_path, "wb") as profile_zip:
                 profile_zip.write(source.content)
 
-    def extractProfileZip(self):
+    def extractProfileZip(self) -> None:
         with zipfile.ZipFile(self.profile_zip_path, "r") as zip_ref:
             zip_ref.extractall(self.profile_path)
         print("profile extracted", self.profile_path)
         os.remove(self.profile_zip_path)
 
-    def getGeolocationParams(self, profileGeolocationParams, tzGeolocationParams):
+    def getGeolocationParams(
+        self,
+        profileGeolocationParams: Dict[str, Any],
+        tzGeolocationParams: Dict[str, Any],
+    ) -> Dict[str, Any]:
         if profileGeolocationParams.get("fillBasedOnIp"):
             return {
                 "mode": profileGeolocationParams["mode"],
@@ -506,7 +511,7 @@ class GoLogin(object):
             "accuracy": profileGeolocationParams["accuracy"],
         }
 
-    def convertPreferences(self, preferences):
+    def convertPreferences(self, preferences: Dict[str, Any]) -> Dict[str, Any]:
         resolution = preferences.get("resolution", "1920x1080")
         preferences["screenWidth"] = int(resolution.split("x")[0])
         preferences["screenHeight"] = int(resolution.split("x")[1])
@@ -594,7 +599,7 @@ class GoLogin(object):
 
         return preferences
 
-    def updatePreferences(self):
+    def updatePreferences(self) -> None:
         pref_file = os.path.join(self.profile_path, "Default", "Preferences")
         with open(pref_file, "r", encoding="utf-8") as pfile:
             preferences = json.load(pfile)
@@ -658,7 +663,7 @@ class GoLogin(object):
         pfile = open(pref_file, "w")
         json.dump(preferences, pfile)
 
-    def createStartup(self):
+    def createStartup(self) -> str:
         print("createStartup", self.profile_path)
         if self.local == False and os.path.exists(self.profile_path):
             try:
@@ -676,7 +681,7 @@ class GoLogin(object):
             print("cookies downloaded")
         return self.profile_path
 
-    def downloadCookies(self):
+    def downloadCookies(self) -> None:
         api_base_url = API_URL
         access_token = self.access_token
 
@@ -717,13 +722,13 @@ class GoLogin(object):
             print("uploadCookies", e)
             return e
 
-    def headers(self):
+    def headers(self) -> Dict[str, str]:
         return {
             "Authorization": "Bearer " + self.access_token,
             "User-Agent": "Selenium-API",
         }
 
-    def getRandomFingerprint(self, options):
+    def getRandomFingerprint(self, options: Dict[str, Any]) -> Dict[str, Any]:
         os_type = options.get("os", "lin")
         return json.loads(
             requests.get(
@@ -731,14 +736,14 @@ class GoLogin(object):
             ).content.decode("utf-8")
         )
 
-    def profiles(self):
+    def profiles(self) -> Dict[str, Any]:
         return json.loads(
             requests.get(
                 API_URL + "/browser/v2", headers=self.headers()
             ).content.decode("utf-8")
         )
 
-    def create(self, options={}):
+    def create(self, options: Dict[str, Any] = {}) -> str:
         profile_options = self.getRandomFingerprint(options)
         navigator = options.get("navigator")
         if options.get("navigator"):
@@ -811,11 +816,11 @@ class GoLogin(object):
             raise ProtocolException(response)
         return response.get("id")
 
-    def delete(self, profile_id=None):
+    def delete(self, profile_id: Union[str, None] = None) -> None:
         profile = self.profile_id if profile_id == None else profile_id
         requests.delete(API_URL + "/browser/" + profile, headers=self.headers())
 
-    def update(self, options):
+    def update(self, options: Dict[str, Any]):
         self.profile_id = options.get("id")
         profile = self.getProfile()
         # print("profile", profile)
@@ -829,7 +834,9 @@ class GoLogin(object):
         # print("update", resp)
         # return json.loads(resp)
 
-    def waitDebuggingUrl(self, delay_s, remote_orbita_url, try_count=3):
+    def waitDebuggingUrl(
+        self, delay_s: int, remote_orbita_url: str, try_count: int = 3
+    ) -> Dict[str, str]:
         url = remote_orbita_url + "/json/version"
         wsUrl = ""
         try_number = 1
@@ -851,7 +858,7 @@ class GoLogin(object):
 
         return {"status": "success", "wsUrl": wsUrl}
 
-    def startRemote(self, delay_s=3):
+    def startRemote(self, delay_s: int = 3) -> Dict[str, str]:
         responseJson = requests.post(
             API_URL + "/browser/" + self.profile_id + "/web",
             headers=self.headers(),
@@ -871,14 +878,14 @@ class GoLogin(object):
 
         return self.waitDebuggingUrl(delay_s, remote_orbita_url=remote_orbita_url)
 
-    def stopRemote(self):
+    def stopRemote(self) -> None:
         response = requests.delete(
             API_URL + "/browser/" + self.profile_id + "/web",
             headers=self.headers(),
             params={"isNewCloudBrowser": self.is_new_cloud_browser},
         )
 
-    def clearCookies(self, profile_id=None):
+    def clearCookies(self, profile_id: Union[str, None] = None) -> Dict[str, str]:
         self.cleaningLocalCookies = True
 
         profile = self.profile_id if profile_id == None else profile_id
@@ -893,7 +900,7 @@ class GoLogin(object):
         else:
             return {"status": "failure"}
 
-    async def normalizePageView(self, page):
+    async def normalizePageView(self, page) -> None:
         if self.preferences.get("screenWidth") == None:
             self.profile = self.getProfile()
             self.preferences["screenWidth"] = int(
@@ -907,7 +914,7 @@ class GoLogin(object):
         await page.setViewport({"width": width, "height": height})
 
 
-def getRandomPort():
+def getRandomPort() -> int:
     while True:
         port = random.randint(1000, 35000)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
