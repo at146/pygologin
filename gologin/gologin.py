@@ -89,7 +89,7 @@ class GoLogin(object):
         if self.extra_params:
             print("extra_params", self.extra_params)
         self.setProfileId(options.get("profile_id"))
-        self.preferences = {}
+        self.preferences: Dict[str, Any] = {}
         self.pid = int()
 
     def __enter__(self):
@@ -99,7 +99,7 @@ class GoLogin(object):
     def __exit__(self, *args, **kwargs):
         self.stop()
 
-    def setProfileId(self, profile_id: Union[str, None]):
+    def setProfileId(self, profile_id: Union[str, None]) -> None:
         self.profile_id = profile_id
         if self.profile_id is None:
             return
@@ -333,7 +333,7 @@ class GoLogin(object):
                 except:
                     continue
 
-    def formatProxyUrl(self, proxy: Dict[str, Any]):
+    def formatProxyUrl(self, proxy: Dict[str, Any]) -> str:
         return (
             proxy.get("mode", "http")
             + "://"
@@ -342,7 +342,7 @@ class GoLogin(object):
             + str(proxy.get("port", 80))
         )
 
-    def formatProxyUrlPassword(self, proxy):
+    def formatProxyUrlPassword(self, proxy: Dict[str, Any]) -> str:
         mode = "socks5h" if proxy.get("mode") == "socks5" else proxy.get("mode", "http")
         if proxy.get("username", "") == "":
             return (
@@ -361,7 +361,7 @@ class GoLogin(object):
                 + str(proxy.get("port", 80))
             )
 
-    def getTimeZone(self):
+    def getTimeZone(self) -> Dict[str, Any]:
         proxy = self.proxy
         if proxy:
             proxies = {
@@ -824,7 +824,7 @@ class GoLogin(object):
         profile = self.profile_id if profile_id is None else profile_id
         requests.delete(API_URL + "/browser/" + profile, headers=self.headers())
 
-    def update(self, options: Dict[str, Any]):
+    def update(self, options: Dict[str, Any]) -> None:
         self.profile_id = options.get("id")
         profile = self.getProfile()
         # print("profile", profile)
