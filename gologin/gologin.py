@@ -14,6 +14,7 @@ import math
 import socket
 import random
 import psutil
+import logging
 
 from .extensionsManager import ExtensionsManager
 from .cookiesManager import CookiesManager
@@ -22,6 +23,10 @@ API_URL = "https://api.gologin.com"
 PROFILES_URL = "https://gprofiles-new.gologin.com/"
 GET_TIMEZONE_URL = "https://geo.myip.link"
 FILES_GATEWAY = "https://files-gateway.gologin.com"
+
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class ProtocolException(Exception):
@@ -87,7 +92,7 @@ class GoLogin(object):
             )
 
         if self.extra_params:
-            print("extra_params", self.extra_params)
+            log.debug("extra_params %s", self.extra_params)
         self.setProfileId(options.get("profile_id"))
         self.preferences: Dict[str, Any] = {}
         self.pid = int()
@@ -210,7 +215,7 @@ class GoLogin(object):
         return url
 
     def start(self) -> str:
-        print("start")
+        log.debug("start")
         profile_path = self.createStartup()
         if self.spawn_browser is True:
             return self.spawnBrowser()
@@ -238,7 +243,7 @@ class GoLogin(object):
             try:
                 os.rename(profile_path, profile_path)
             except OSError as e:
-                print("waiting chrome termination")
+                log.debug("waiting chrome termination")
                 self.waitUntilProfileUsing(try_count + 1)
 
     def stop(self) -> None:
@@ -251,10 +256,10 @@ class GoLogin(object):
             self.commitProfile()
             os.remove(self.profile_zip_path_upload)
             shutil.rmtree(self.profile_path)
-        print("profile stopped")
+        log.debug("profile stopped")
 
     def commitProfile(self) -> None:
-        print("commitProfile")
+        log.debug("commitProfile")
         zipf = zipfile.ZipFile(self.profile_zip_path_upload, "w", zipfile.ZIP_DEFLATED)
         self.zipdir(self.profile_path, zipf)
         zipf.close()
@@ -271,7 +276,7 @@ class GoLogin(object):
             data=open(self.profile_zip_path_upload, "rb"),
             headers=headers,
         )
-        print("commitProfile completed", data)
+        log.debug("commitProfile completed %s", data)
 
     def commitProfileOld(self) -> None:
         zipf = zipfile.ZipFile(self.profile_zip_path_upload, "w", zipfile.ZIP_DEFLATED)
@@ -389,9 +394,9 @@ class GoLogin(object):
         return data
 
     def downloadProfileZip(self) -> None:
-        print("downloadProfileZip")
+        log.debug("downloadProfileZip")
         s3path = self.profile.get("s3Path", "")
-        print("s3path", s3path)
+        log.debug("s3path %s", s3path)
         data = ""
         headers = {
             "Authorization": "Bearer " + self.access_token,
@@ -402,17 +407,17 @@ class GoLogin(object):
         data = requests.get(FILES_GATEWAY + "/download", headers=headers).content
 
         if len(data) == 0:
-            print("data is 0 - creating empty profile")
+            log.debug("data is 0 - creating empty profile")
             self.createEmptyProfile()
         else:
             with open(self.profile_zip_path, "wb") as f:
                 f.write(data)
 
         try:
-            print("extracting profile")
+            log.debug("extracting profile")
             self.extractProfileZip()
         except Exception as e:
-            print("ERROR!", e)
+            log.exception("ERROR! %s", e)
             self.uploadEmptyProfile()
             self.createEmptyProfile()
             self.extractProfileZip()
@@ -424,7 +429,7 @@ class GoLogin(object):
         #     self.extractProfileZip()
 
     def downloadProfileZipOld(self) -> None:
-        print("downloadProfileZip")
+        log.debug("downloadProfileZip")
         s3path = self.profile.get("s3Path", "")
         data = ""
         if s3path == "":
@@ -442,18 +447,18 @@ class GoLogin(object):
             data = requests.get(s3url).content
 
         if len(data) == 0:
-            print("data is 0 - creating fresh profile content")
+            log.debug("data is 0 - creating fresh profile content")
             self.createEmptyProfile()
         else:
-            print("data is not 0")
+            log.debug("data is not 0")
             with open(self.profile_zip_path, "wb") as f:
                 f.write(data)
 
         try:
-            print("extracting profile")
+            log.debug("extracting profile")
             self.extractProfileZip()
         except Exception as e:
-            print("exception", e)
+            log.exception("exception %s", e)
             self.uploadEmptyProfile()
             self.createEmptyProfile()
             self.extractProfileZip()
@@ -461,20 +466,20 @@ class GoLogin(object):
         if not os.path.exists(
             os.path.join(self.profile_path, "Default", "Preferences")
         ):
-            print("preferences not found - creating fresh profile content")
+            log.debug("preferences not found - creating fresh profile content")
             self.uploadEmptyProfile()
             self.createEmptyProfile()
             self.extractProfileZip()
 
     def uploadEmptyProfile(self) -> None:
-        print("uploadEmptyProfile")
+        log.debug("uploadEmptyProfile")
         upload_profile = open(r"./gologin_zeroprofile.zip", "wb")
         source = requests.get(PROFILES_URL + "zero_profile.zip")
         upload_profile.write(source.content)
         upload_profile.close
 
     def createEmptyProfile(self) -> None:
-        print("createEmptyProfile")
+        log.debug("createEmptyProfile")
         empty_profile = "../gologin_zeroprofile.zip"
 
         if not os.path.exists(empty_profile):
@@ -484,7 +489,7 @@ class GoLogin(object):
             shutil.copy(empty_profile, self.profile_zip_path)
 
         if not os.path.exists(empty_profile):
-            print("downloading zero profile")
+            log.debug("downloading zero profile")
             source = requests.get(PROFILES_URL + "zero_profile.zip")
             with open(self.profile_zip_path, "wb") as profile_zip:
                 profile_zip.write(source.content)
@@ -492,7 +497,7 @@ class GoLogin(object):
     def extractProfileZip(self) -> None:
         with zipfile.ZipFile(self.profile_zip_path, "r") as zip_ref:
             zip_ref.extractall(self.profile_path)
-        print("profile extracted", self.profile_path)
+        log.debug("profile extracted %s", self.profile_path)
         os.remove(self.profile_zip_path)
 
     def getGeolocationParams(
@@ -644,7 +649,7 @@ class GoLogin(object):
             profile["proxy"]["password"] = profile.get("autoProxyPassword")
 
         if not proxy or proxy.get("mode") == "none":
-            print("no proxy")
+            log.debug("no proxy")
             proxy = None
 
         if proxy and proxy.get("mode") == "geolocation":
@@ -656,8 +661,8 @@ class GoLogin(object):
         self.proxy = proxy
         self.profile_name = profile.get("name")
         if self.profile_name is None:
-            print("empty profile name")
-            print("profile=", profile)
+            log.debug("empty profile name")
+            log.debug("profile= %s", profile)
             exit()
 
         gologin = self.convertPreferences(profile)
@@ -668,21 +673,21 @@ class GoLogin(object):
         json.dump(preferences, pfile)
 
     def createStartup(self) -> str:
-        print("createStartup", self.profile_path)
+        log.debug("createStartup %s", self.profile_path)
         if self.local is False and os.path.exists(self.profile_path):
             try:
                 shutil.rmtree(self.profile_path)
             except:
-                print("error removing profile", self.profile_path)
+                log.error("error removing profile %s", self.profile_path)
         self.profile = self.getProfile()
         if self.local is False:
             self.downloadProfileZip()
         self.updatePreferences()
 
-        print("writeCookiesFromServer", self.writeCookiesFromServer)
+        log.debug("writeCookiesFromServer %s", self.writeCookiesFromServer)
         if self.writeCookiesFromServer:
             self.downloadCookies()
-            print("cookies downloaded")
+            log.debug("cookies downloaded")
         return self.profile_path
 
     def downloadCookies(self) -> None:
@@ -702,10 +707,10 @@ class GoLogin(object):
             )
 
             cookies = response.json()
-            print("COOKIES LENGTH", len(cookies))
+            log.debug("COOKIES LENGTH %s", len(cookies))
             cookiesManagerInst.write_cookies_to_file(cookies)
         except Exception as e:
-            print("downloadCookies exc", e, e.__traceback__.tb_lineno)
+            log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)
             raise e
 
     def uploadCookies(self, cookies):
@@ -723,7 +728,7 @@ class GoLogin(object):
             )
             return response
         except Exception as e:
-            print("uploadCookies", e)
+            log.exception("uploadCookies %s", e)
             return e
 
     def headers(self) -> Dict[str, str]:
@@ -879,7 +884,7 @@ class GoLogin(object):
             },
         ).content.decode("utf-8")
         response = json.loads(responseJson)
-        print("profileResponse", response)
+        log.debug("profileResponse %s", response)
 
         remote_orbita_url = "https://" + self.profile_id + ".orbita.gologin.com"
         if self.is_new_cloud_browser:
