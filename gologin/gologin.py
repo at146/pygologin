@@ -801,6 +801,13 @@ class GoLogin(object):
             "profile": json.dumps(profile_options),
         }
 
+        if options.get("webGLMetadata") is None:
+            profile["webGLMetadata"] = profile_options["webGLMetadata"]
+            profile["webGLMetadata"]["mode"] = "mask"
+
+        if options.get("webglParams") is None:
+            profile["webglParams"] = profile_options.get("webglParams")
+
         if options.get("storage"):
             profile["storage"] = options.get("storage")
 
