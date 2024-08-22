@@ -125,21 +125,21 @@ class GoLogin(object):
             try:
                 ver = extensionsManagerInst.downloadExt(ext)
                 pathToExt += os.path.join(
-                pathlib.Path.home(),
-                ".gologin",
-                "extensions",
-                "chrome-extensions",
-                ext + "@" + ver + ",",
-            )
-                profileExtensionsCheck.append(
-                os.path.join(
                     pathlib.Path.home(),
-                        ".gologin",
+                    ".gologin",
                     "extensions",
                     "chrome-extensions",
-                    ext + "@" + ver,
+                    ext + "@" + ver + ",",
                 )
-            )
+                profileExtensionsCheck.append(
+                    os.path.join(
+                        pathlib.Path.home(),
+                        ".gologin",
+                        "extensions",
+                        "chrome-extensions",
+                        ext + "@" + ver,
+                    )
+                )
             except Exception as e:
                 continue
 
@@ -279,15 +279,11 @@ class GoLogin(object):
         self.zipdir(self.profile_path, zipf)
         zipf.close()
 
-        headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "User-Agent": "Selenium-API",
-        }
         # print('profile size=', os.stat(self.profile_zip_path_upload).st_size)
 
         signedUrl = requests.get(
             API_URL + "/browser/" + self.profile_id + "/storage-signature",
-            headers=headers,
+            headers=self.headers(),
         ).content.decode("utf-8")
 
         requests.put(signedUrl, data=open(self.profile_zip_path_upload, "rb"))
@@ -376,13 +372,9 @@ class GoLogin(object):
 
     def getProfile(self, profile_id: Union[str, None] = None) -> Dict[str, Any]:
         profile = self.profile_id if profile_id is None else profile_id
-        headers = {
-            "Authorization": "Bearer " + self.access_token,
-            "User-Agent": "Selenium-API",
-        }
         data = json.loads(
             requests.get(
-                API_URL + "/browser/" + profile, headers=headers
+                API_URL + "/browser/" + profile, headers=self.headers()
             ).content.decode("utf-8")
         )
         if data.get("statusCode") == 404:
@@ -430,12 +422,8 @@ class GoLogin(object):
         data = ""
         if s3path == "":
             # print('downloading profile direct')
-            headers = {
-                "Authorization": "Bearer " + self.access_token,
-                "User-Agent": "Selenium-API",
-            }
             data = requests.get(
-                API_URL + "/browser/" + self.profile_id, headers=headers
+                API_URL + "/browser/" + self.profile_id, headers=self.headers()
             ).content
         else:
             # print('downloading profile s3')
@@ -688,7 +676,6 @@ class GoLogin(object):
 
     def downloadCookies(self) -> None:
         api_base_url = API_URL
-        access_token = self.access_token
 
         cookiesManagerInst = CookiesManager(
             profile_id=self.profile_id, tmpdir=self.tmpdir
@@ -696,10 +683,7 @@ class GoLogin(object):
         try:
             response = requests.get(
                 f"{api_base_url}/browser/{self.profile_id}/cookies",
-                headers={
-                    "Authorization": f"Bearer {self.access_token}",
-                    "user-agent": "Selenium-API",
-                },
+                headers=self.headers(),
             )
 
             cookies = response.json()
@@ -711,15 +695,11 @@ class GoLogin(object):
 
     def uploadCookies(self, cookies):
         api_base_url = API_URL
-        access_token = self.access_token
 
         try:
             response = requests.post(
                 f"{api_base_url}/browser/{self.profile_id}/cookies/?encrypted=true",
-                headers={
-                    "Authorization": f"Bearer {self.access_token}",
-                    "User-Agent": "Selenium-API",
-                },
+                headers=self.headers(),
                 json=cookies,
             )
             return response
