@@ -1,6 +1,7 @@
+import logging
 import sqlite3
 import base64
-from typing import List, Dict, Tuple
+from typing import Any, List, Dict, Tuple
 import datetime
 import os
 from os import access, F_OK
@@ -14,6 +15,9 @@ SAME_SITE = {
     2: "strict",
 }
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 class CookiesManager:
     def __init__(self, *args, **kwargs):
@@ -21,9 +25,9 @@ class CookiesManager:
         self.tmpdir = kwargs.get("tmpdir")
 
     def get_db(self):
-        connection_opts = {"database": self.get_cookies_file_path()}
-        # print('FILEPATH', self.get_cookies_file_path())
-        return sqlite3.connect(**connection_opts)
+        database = self.get_cookies_file_path()
+        log.debug("FILEPATH %s", database)
+        return sqlite3.connect(database=database)
 
     def get_chunked_insert_values(
         self, cookies_arr: List[dict]
@@ -40,10 +44,10 @@ class CookiesManager:
 
         for cookies in chunked_cookies_arr:
             query_placeholders = ", ".join(
-                ["(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"]
+                ["(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"]
                 * len(cookies)
             )
-            query = f"insert or replace into cookies (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, priority, samesite, source_scheme, source_port, last_update_utc) values {query_placeholders}"
+            query = f"insert or replace into cookies (creation_utc, host_key, top_frame_site_key, name, value, encrypted_value, path, expires_utc, is_secure, is_httponly, last_access_utc, has_expires, is_persistent, priority, samesite, source_scheme, source_port, is_same_party, last_update_utc) values {query_placeholders}"
 
             query_params = []
             for cookie in cookies:
@@ -54,7 +58,6 @@ class CookiesManager:
                     else cookie.get("expirationDate", 0)
                 )
                 encrypted_value = cookie["value"]
-                value = cookie["value"]
                 samesite = next(
                     key
                     for key, value in SAME_SITE.items()
@@ -83,22 +86,23 @@ class CookiesManager:
                     (
                         creation_date,
                         cookie.get("domain", ""),
-                        "",
+                        "",  # top_frame_site_key
                         cookie["name"],
-                        "",
-                        cookie["value"],
+                        "",  # value
+                        encrypted_value,
                         cookie.get("path", ""),
                         expiration_date,
                         is_secure,
                         int(cookie.get("httpOnly", 0)),
-                        0,
-                        0 if expiration_date == 0 else 1,
+                        0,  # last_access_utc
+                        0 if expiration_date == 0 else 1,  # has_expires
                         is_persistent,
-                        1,
+                        1,  # default priority value (https://github.com/chromium/chromium/blob/main/net/cookies/cookie_constants.h)
                         samesite,
                         source_scheme,
                         source_port,
-                        0,
+                        0,  # is_same_party
+                        0,  # last_update_utc
                     )
                 )
 
@@ -106,7 +110,7 @@ class CookiesManager:
 
         return result
 
-    def load_cookies_from_file(self) -> List[Dict[str, any]]:
+    def load_cookies_from_file(self) -> List[Dict[str, Any]]:
         db = None
         cookies = []
 
@@ -133,7 +137,10 @@ class CookiesManager:
                     samesite,
                     source_scheme,
                     source_port,
+                    is_same_party,
                     last_update_utc,
+                    source_type,
+                    has_cross_site_ancestor,
                 ) = row
                 cookies.append(
                     {
@@ -152,7 +159,7 @@ class CookiesManager:
                     }
                 )
         except Exception as error:
-            print("load_cookies_from_file", error)
+            log.exception("load_cookies_from_file %s", error)
             raise error
         finally:
             if db:
@@ -164,7 +171,7 @@ class CookiesManager:
         if unixtime == 0:
             return unixtime
 
-        win32filetime = datetime.utcfromtimestamp(0)
+        win32filetime = datetime.datetime.utcfromtimestamp(0)
         win32filetime_utc = (
             win32filetime - datetime.datetime(1601, 1, 1)
         ).total_seconds()
@@ -206,6 +213,9 @@ class CookiesManager:
         return [arr[i : i + chunk_size] for i in range(0, len(arr), chunk_size)]
 
     def get_cookies_file_path(self) -> str:
+        if self.tmpdir is None:
+            raise ValueError("tmpdir must be specified")
+
         base_cookies_file_path = os.path.join(
             self.tmpdir, f"gologin_{self.profile_id}", "Default", "Cookies"
         )
@@ -222,7 +232,7 @@ class CookiesManager:
         return base_cookies_file_path
 
     def write_cookies_to_file(self, cookies):
-        print("write_cookies_to_file")
+        log.debug("write_cookies_to_file")
         result_cookies = [
             {"value": base64.b64encode(cookie["value"].encode()), **cookie}
             for cookie in cookies  # plain
@@ -246,7 +256,8 @@ class CookiesManager:
 
                 for query, query_params in chunk_insert_values:
                     for params in query_params:
-                        res = cursor.execute(query, params)
+                        cursor.execute(query, params)
+                        # res = cursor.execute(query, params)
                         # print('params', params)
                         # print('res', res.rowcount, res.lastrowid, res.fetchall())
                 db.commit()
@@ -258,9 +269,7 @@ class CookiesManager:
             self.load_cookies_from_file()
             db.close()
         except Exception as error:
-            print(
-                "write_cookies_to_file exception:", error, error.__traceback__.tb_lineno
-            )
+            log.exception("write_cookies_to_file exception: %s", error)
             raise error
         finally:
             if db:
