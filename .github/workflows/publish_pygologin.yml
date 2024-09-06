@@ -2,8 +2,8 @@ name: Publish to PyPI
 
 on:
   push:
-    branches:
-      - pygologin
+    tags:
+      - 'v*'
 
 jobs:
   build:
