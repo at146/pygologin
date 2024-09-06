@@ -1,7 +1,5 @@
 import unittest
 
-from gologin import GoLogin
-
 
 class Test(unittest.TestCase):
     def test_pass(self):

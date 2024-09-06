@@ -1,7 +1,9 @@
 # pygologin
- REST API provides programmatic access to GoLogin App. Create a new browser profile, get a list of all browser profiles, add a browser profile and running 
+
+ REST API provides programmatic access to GoLogin App. Create a new browser profile, get a list of all browser profiles, add a browser profile and running  
 
 # class GoLogin - class for working with <a href="https://gologin.com" target="_blank">gologin.com</a> API
+
 # Official Package
 
 ## Getting Started
@@ -10,12 +12,11 @@ GoLogin supports Linux, MacOS and Windows platforms.
 
 ### Installation
 
-
-`pip3 install gologin`
+`pip3 install pygologin`
 
 or clone this repository
 
-`git clone https://github.com/gologinapp/pygologin.git`
+`git clone https://github.com/AlexName1/pygologin.git`
 
 for running gologin-selenium.py install selenium
 
@@ -66,13 +67,12 @@ assert "Python" in driver.title
 driver.close()
 time.sleep(3)
 gl.stop()
-
 ```
+
 ### Running example:
 
 `python gologin-selenium.py`
 
-###
 ### Methods
 #### constructor
 
@@ -98,6 +98,7 @@ gl = GoLogin({
 ```
 #### Example create profile
 `python gologin-create-profile.py`
+
 ```py
 from gologin import GoLogin
 
@@ -154,7 +155,7 @@ start browser with profile id
 stop browser with profile id
 
 ## Full GoLogin API
+
 **Swagger:** <a href="https://api.gologin.com/docs" target="_blank">link here</a>
 
 **Postman:** <a href="https://documenter.getpostman.com/view/21126834/Uz5GnvaL" target="_blank">link here</a>
-

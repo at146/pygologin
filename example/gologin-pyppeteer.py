@@ -2,7 +2,7 @@ import time
 import asyncio
 import pyppeteer
 from sys import platform
-from gologin import GoLogin
+from pygologin import GoLogin
 
 
 async def main():

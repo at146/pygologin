@@ -1,4 +1,4 @@
-from gologin import GoLogin
+from pygologin import GoLogin
 
 
 gl = GoLogin(

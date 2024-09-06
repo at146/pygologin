@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pygologin"
+description = "Not official GoLogin python package"
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+authors = [
+    { name = "AlexName1", email = "at146@ya.ru" },
+]
+maintainers = [
+    { name = "AlexName1", email = "at146@ya.ru" },
+]
+keywords = [
+    "gologin",
+    "api",
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "psutil",
+]
+dynamic = ["version"]
+
+[tool.hatch.version]
+path = "pygologin/__meta__.py"
+
+[project.urls]
+Homepage = "https://github.com/AlexName1/pygologin"
+Repository = "https://github.com/AlexName1/pygologin"
+Issues = "https://github.com/AlexName1/pygologin/issues"
