@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 import requests
 
 
@@ -15,14 +15,13 @@ class TestBrowserController:
     def test_getBrowserCookies(self, access_token: str, profile_id: str):
         response = requests.get(
             f"{API_URL}/browser/{profile_id}/cookies",
-            headers=self.headers(access_token)
+            headers=self.headers(access_token),
         )
         assert response.ok is True
-        assert 'application/json' in response.headers.get('Content-Type', '')
-        
+        assert "application/json" in response.headers.get("Content-Type", "")
 
     def test_postBrowserCookies(
-        self, access_token: str, profile_id: str, cookies: List
+        self, access_token: str, profile_id: str, cookies: List[Dict[str, Any]]
     ):
         response = requests.post(
             f"{API_URL}/browser/{profile_id}/cookies",
