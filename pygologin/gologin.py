@@ -18,8 +18,10 @@ import logging
 
 from requests import Response
 
-from .extensionsManager import ExtensionsManager
-from .cookiesManager import CookiesManager
+from pygologin.cookiesManager.cookiesManager import CookiesManager
+from pygologin.exceptions import ProtocolException
+from pygologin.extensionsManager.extensionsManager import ExtensionsManager
+
 
 API_URL = "https://api.gologin.com"
 PROFILES_URL = "https://gprofiles-new.gologin.com/"
@@ -29,16 +31,6 @@ FILES_GATEWAY = "https://files-gateway.gologin.com"
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
-
-class ProtocolException(Exception):
-    def __init__(self, data: dict):
-        self._json = data
-        super().__init__(data.__repr__())
-
-    @property
-    def json(self) -> dict:
-        return self._json
 
 
 class GoLogin(object):
