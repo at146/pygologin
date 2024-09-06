@@ -4,7 +4,7 @@ import os
 import stat
 import sys
 import shutil
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 import requests
 import zipfile
 import subprocess
@@ -15,6 +15,8 @@ import socket
 import random
 import psutil
 import logging
+
+from requests import Response
 
 from .extensionsManager import ExtensionsManager
 from .cookiesManager import CookiesManager
@@ -43,9 +45,9 @@ class GoLogin(object):
     def __init__(self, options: Dict[str, Any]) -> None:
         self.access_token: Union[str, None] = options.get("token")
         self.profile_id: Union[str, None] = options.get("profile_id")
-        self.tmpdir = options.get("tmpdir", tempfile.gettempdir())
+        self.tmpdir: str = options.get("tmpdir", tempfile.gettempdir())
         self.address: str = options.get("address", "127.0.0.1")
-        self.extra_params = options.get("extra_params", [])
+        self.extra_params: List[str] = options.get("extra_params", [])
         self.port: int = options.get("port", 3500)
         self.local: bool = options.get("local", False)
         self.spawn_browser: bool = options.get("spawn_browser", True)
@@ -83,7 +85,7 @@ class GoLogin(object):
                             "Orbita-Browser.app/Contents/MacOS/Orbita",
                         )
 
-        except Exception as e:
+        except Exception:
             self.executablePath = ""
 
         if not self.executablePath:
@@ -118,7 +120,7 @@ class GoLogin(object):
 
     def loadExtensions(self) -> Union[str, None]:
         profile = self.profile
-        chromeExtensions = profile.get("chromeExtensions")
+        chromeExtensions = profile.get("chromeExtensions", [])
         extensionsManagerInst = ExtensionsManager()
         pathToExt = ""
         profileExtensionsCheck = []
@@ -141,7 +143,7 @@ class GoLogin(object):
                         ext + "@" + ver,
                     )
                 )
-            except Exception as e:
+            except Exception:
                 continue
 
         pref_file = os.path.join(self.profile_path, "Default", "Preferences")
@@ -178,8 +180,8 @@ class GoLogin(object):
             "--lang=en-US",
         ]
 
-        chromeExtensions = self.profile.get("chromeExtensions")
-        if chromeExtensions and len(chromeExtensions) > 0:
+        chromeExtensions = self.profile.get("chromeExtensions", [])
+        if chromeExtensions:
             paths = self.loadExtensions()
             if paths is not None:
                 extToParams = "--load-extension=" + paths
@@ -207,9 +209,9 @@ class GoLogin(object):
         url = str(self.address) + ":" + str(self.port)
         while try_count < 100:
             try:
-                data = requests.get("http://" + url + "/json").content
+                requests.get("http://" + url + "/json").content
                 break
-            except:
+            except Exception:
                 try_count += 1
                 time.sleep(1)
         return url
@@ -231,7 +233,7 @@ class GoLogin(object):
                     continue
                 try:
                     ziph.write(path, path.replace(self.profile_path, ""))
-                except:
+                except Exception:
                     continue
 
     def waitUntilProfileUsing(self, try_count=0) -> None:
@@ -242,7 +244,7 @@ class GoLogin(object):
         if os.path.exists(profile_path):
             try:
                 os.rename(profile_path, profile_path)
-            except OSError as e:
+            except OSError:
                 log.debug("waiting chrome termination")
                 self.waitUntilProfileUsing(try_count + 1)
 
@@ -264,6 +266,9 @@ class GoLogin(object):
         self.zipdir(self.profile_path, zipf)
         zipf.close()
 
+        if self.access_token is None:
+            raise ValueError("access_token is None")
+
         headers = {
             "Authorization": "Bearer " + self.access_token,
             "User-Agent": "Selenium-API",
@@ -284,6 +289,9 @@ class GoLogin(object):
         zipf.close()
 
         # print('profile size=', os.stat(self.profile_zip_path_upload).st_size)
+
+        if self.profile_id is None:
+            raise ValueError("profile_id is None")
 
         signedUrl = requests.get(
             API_URL + "/browser/" + self.profile_id + "/storage-signature",
@@ -331,7 +339,7 @@ class GoLogin(object):
             if os.path.exists(fpath):
                 try:
                     shutil.rmtree(fpath)
-                except:
+                except Exception:
                     continue
 
     def formatProxyUrl(self, proxy: Dict[str, Any]) -> str:
@@ -375,10 +383,14 @@ class GoLogin(object):
         return json.loads(data.content.decode("utf-8"))
 
     def getProfile(self, profile_id: Union[str, None] = None) -> Dict[str, Any]:
-        profile = self.profile_id if profile_id is None else profile_id
+        profile_id = self.profile_id if profile_id is None else profile_id
+
+        if profile_id is None:
+            raise ValueError("profile_id is None")
+
         data = json.loads(
             requests.get(
-                API_URL + "/browser/" + profile, headers=self.headers()
+                API_URL + "/browser/" + profile_id, headers=self.headers()
             ).content.decode("utf-8")
         )
         if data.get("statusCode") == 404:
@@ -390,6 +402,10 @@ class GoLogin(object):
         s3path = self.profile.get("s3Path", "")
         log.debug("s3path %s", s3path)
         data = ""
+
+        if self.access_token is None:
+            raise ValueError("access_token is None")
+
         headers = {
             "Authorization": "Bearer " + self.access_token,
             "User-Agent": "Selenium-API",
@@ -426,6 +442,8 @@ class GoLogin(object):
         data = ""
         if s3path == "":
             # print('downloading profile direct')
+            if self.profile_id is None:
+                raise ValueError("profile_id is None")
             data = requests.get(
                 API_URL + "/browser/" + self.profile_id, headers=self.headers()
             ).content
@@ -665,7 +683,7 @@ class GoLogin(object):
         if self.local is False and os.path.exists(self.profile_path):
             try:
                 shutil.rmtree(self.profile_path)
-            except:
+            except Exception:
                 log.error("error removing profile %s", self.profile_path)
         self.profile = self.getProfile()
         if self.local is False:
@@ -679,14 +697,12 @@ class GoLogin(object):
         return self.profile_path
 
     def downloadCookies(self) -> None:
-        api_base_url = API_URL
-
         cookiesManagerInst = CookiesManager(
             profile_id=self.profile_id, tmpdir=self.tmpdir
         )
         try:
             response = requests.get(
-                f"{api_base_url}/browser/{self.profile_id}/cookies",
+                f"{API_URL}/browser/{self.profile_id}/cookies",
                 headers=self.headers(),
             )
 
@@ -697,21 +713,21 @@ class GoLogin(object):
             log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)
             raise e
 
-    def uploadCookies(self, cookies):
-        api_base_url = API_URL
-
+    def uploadCookies(self, cookies) -> Response:
         try:
             response = requests.post(
-                f"{api_base_url}/browser/{self.profile_id}/cookies/?encrypted=true",
+                f"{API_URL}/browser/{self.profile_id}/cookies/?encrypted=true",
                 headers=self.headers(),
                 json=cookies,
             )
             return response
         except Exception as e:
             log.exception("uploadCookies %s", e)
-            return e
+            raise e
 
     def headers(self) -> Dict[str, str]:
+        if self.access_token is None:
+            raise ValueError("access_token is None")
         return {
             "Authorization": "Bearer " + self.access_token,
             "User-Agent": "Selenium-API",
@@ -808,13 +824,15 @@ class GoLogin(object):
                 API_URL + "/browser", headers=self.headers(), json=profile
             ).content.decode("utf-8")
         )
-        if not (response.get("statusCode") is None):
+        if response.get("statusCode") is not None:
             raise ProtocolException(response)
         return response.get("id")
 
     def delete(self, profile_id: Union[str, None] = None) -> None:
-        profile = self.profile_id if profile_id is None else profile_id
-        requests.delete(API_URL + "/browser/" + profile, headers=self.headers())
+        profile_id = self.profile_id if profile_id is None else profile_id
+        if profile_id is None:
+            raise ValueError("profile_id is None")
+        requests.delete(API_URL + "/browser/" + profile_id, headers=self.headers())
 
     def update(self, options: Dict[str, Any]) -> None:
         self.profile_id = options.get("id")
@@ -822,7 +840,11 @@ class GoLogin(object):
         # print("profile", profile)
         for k, v in options.items():
             profile[k] = v
-        resp = requests.put(
+
+        if self.profile_id is None:
+            raise ValueError("profile_id is None")
+
+        requests.put(
             API_URL + "/browser/" + self.profile_id,
             headers=self.headers(),
             json=profile,
@@ -841,7 +863,7 @@ class GoLogin(object):
             try:
                 response = json.loads(requests.get(url).content)
                 wsUrl = response.get("webSocketDebuggerUrl", "")
-            except:
+            except Exception:
                 pass
             if try_number >= try_count:
                 return {"status": "failure", "wsUrl": wsUrl}
@@ -855,6 +877,8 @@ class GoLogin(object):
         return {"status": "success", "wsUrl": wsUrl}
 
     def startRemote(self, delay_s: int = 3) -> Dict[str, str]:
+        if self.profile_id is None:
+            raise ValueError("profile_id is None")
         responseJson = requests.post(
             API_URL + "/browser/" + self.profile_id + "/web",
             headers=self.headers(),
@@ -875,7 +899,9 @@ class GoLogin(object):
         return self.waitDebuggingUrl(delay_s, remote_orbita_url=remote_orbita_url)
 
     def stopRemote(self) -> None:
-        response = requests.delete(
+        if self.profile_id is None:
+            raise ValueError("profile_id is None")
+        requests.delete(
             API_URL + "/browser/" + self.profile_id + "/web",
             headers=self.headers(),
             params={"isNewCloudBrowser": self.is_new_cloud_browser},
@@ -884,9 +910,11 @@ class GoLogin(object):
     def clearCookies(self, profile_id: Union[str, None] = None) -> Dict[str, str]:
         self.cleaningLocalCookies = True
 
-        profile = self.profile_id if profile_id is None else profile_id
+        profile_id = self.profile_id if profile_id is None else profile_id
+        if profile_id is None:
+            raise ValueError("profile_id is None")
         resp = requests.post(
-            API_URL + "/browser/" + profile + "/cookies?cleanCookies=true",
+            API_URL + "/browser/" + profile_id + "/cookies?cleanCookies=true",
             headers=self.headers(),
             json=[],
         )

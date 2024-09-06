@@ -2,7 +2,7 @@ import time
 from sys import platform
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from gologin import GoLogin
+from pygologin import GoLogin
 
 
 gl = GoLogin(
