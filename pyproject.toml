@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "pygologin"
 description = "Not official GoLogin python package"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = "MIT"
 authors = [
     { name = "AlexName1", email = "at146@ya.ru" },
