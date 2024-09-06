@@ -701,17 +701,13 @@ class GoLogin(object):
             log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)
             raise e
 
-    def uploadCookies(self, cookies) -> Response:
-        try:
-            response = requests.post(
-                f"{API_URL}/browser/{self.profile_id}/cookies/?encrypted=true",
-                headers=self.headers(),
-                json=cookies,
-            )
-            return response
-        except Exception as e:
-            log.exception("uploadCookies %s", e)
-            raise e
+    def uploadCookies(self, cookies: List[Dict[str, Any]]) -> Response:
+        response = requests.post(
+            f"{API_URL}/browser/{self.profile_id}/cookies",
+            headers=self.headers(),
+            json=cookies,
+        )
+        return response
 
     def headers(self) -> Dict[str, str]:
         if self.access_token is None:
