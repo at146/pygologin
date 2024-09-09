@@ -67,7 +67,7 @@ class ExtensionsManager:
 
 
 def crxToZip(buf):
-    isV3 = buf[4] == 3
+    # isV3 = buf[4] == 3
     isV2 = buf[4] == 2
 
     if isV2:

@@ -1,7 +1,5 @@
-import time
 import asyncio
 import pyppeteer
-from sys import platform
 from pygologin import GoLogin
 
 
