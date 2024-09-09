@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - pygologin
+    paths:
+      - ".github/workflows/tests.yml"
+      - "pygologin/**"
+      - "tests/**"
+      - "pyproject.toml"
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python-version:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+
+    defaults:
+      # Force use bash instead of PowerShell
+      run:
+        shell: bash
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install project dependencies
+        run: |
+          pip install -e .[dev,test]
+
+      - name: Lint code
+        run: |
+          ruff check --output-format=github pygologin
+          mypy pygologin
