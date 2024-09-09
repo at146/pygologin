@@ -32,7 +32,21 @@ dynamic = ["version"]
 [tool.hatch.version]
 path = "pygologin/__meta__.py"
 
+[project.optional-dependencies]
+test = [
+    "pytest~=8.3.2",
+]
+dev = [
+    "ruff~=0.6.4",
+    "mypy~=1.11.2",
+    "types-psutil~=6.0.0.20240901",
+    "types-requests~=2.32.0.20240905",
+]
+
 [project.urls]
 Homepage = "https://github.com/AlexName1/pygologin"
 Repository = "https://github.com/AlexName1/pygologin"
 Issues = "https://github.com/AlexName1/pygologin/issues"
+
+[tool.mypy]
+exclude = ["example"]
