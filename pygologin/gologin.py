@@ -908,6 +908,20 @@ class GoLogin(object):
         else:
             return {"status": "failure"}
 
+    def update_proxy(
+        self,
+        profile_id: Union[str, None] = None,
+        proxy: Dict[str, Union[str, int]] = {"mode": "none"},
+    ):
+        if profile_id is None:
+            raise ValueError("profile_id is None")
+        response = requests.patch(
+            f"{API_URL}/browser/{profile_id}/proxy",
+            headers=self.headers(),
+            json=proxy,
+        )
+        return response
+
     async def normalizePageView(self, page) -> None:
         if self.preferences.get("screenWidth") is None:
             self.profile = self.getProfile()

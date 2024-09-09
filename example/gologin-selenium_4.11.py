@@ -2,7 +2,6 @@ import time
 from sys import platform
 from selenium import webdriver
 from pygologin import GoLogin
-from pygologin import getRandomPort
 from selenium.webdriver.chrome.service import Service
 
 gl = GoLogin({"token": "yU0token", "profile_id": "yU0Pr0f1leiD"})

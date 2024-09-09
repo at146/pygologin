@@ -1,8 +1,8 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 import requests
 
 
-API_URL = "https://api.gologin.com"
+API_URL = "https://api.gologin.com/browser"
 
 
 class TestBrowserController:
@@ -14,7 +14,7 @@ class TestBrowserController:
 
     def test_getBrowserCookies(self, access_token: str, profile_id: str):
         response = requests.get(
-            f"{API_URL}/browser/{profile_id}/cookies",
+            f"{API_URL}/{profile_id}/cookies",
             headers=self.headers(access_token),
         )
         assert response.ok is True
@@ -24,8 +24,21 @@ class TestBrowserController:
         self, access_token: str, profile_id: str, cookies: List[Dict[str, Any]]
     ):
         response = requests.post(
-            f"{API_URL}/browser/{profile_id}/cookies",
+            f"{API_URL}/{profile_id}/cookies",
             headers=self.headers(access_token),
             json=cookies,
+        )
+        assert response.ok is True
+
+    def test_patchBrowserProxy(
+        self,
+        access_token: str,
+        profile_id: str,
+        proxy: Dict[str, Union[str, int]] = {"mode": "none"},
+    ):
+        response = requests.patch(
+            f"{API_URL}/{profile_id}/proxy",
+            headers=self.headers(access_token),
+            json=proxy,
         )
         assert response.ok is True
