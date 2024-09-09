@@ -912,7 +912,8 @@ class GoLogin(object):
         self,
         profile_id: Union[str, None] = None,
         proxy: Dict[str, Union[str, int]] = {"mode": "none"},
-    ):
+    ) -> Response:
+        profile_id = self.profile_id if profile_id is None else profile_id
         if profile_id is None:
             raise ValueError("profile_id is None")
         response = requests.patch(
