@@ -705,7 +705,21 @@ class GoLogin(object):
             log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)
             raise e
 
-    def uploadCookies(self, cookies: List[Dict[str, Any]]) -> Response:
+    def get_cookies(self, profile_id: Union[str, None] = None) -> Response:
+        profile_id = self.profile_id if profile_id is None else profile_id
+        if profile_id is None:
+            raise ValueError("profile_id is None")
+        response = requests.get(
+            f"{API_URL}/browser/{self.profile_id}/cookies", headers=self.headers()
+        )
+        return response
+
+    def uploadCookies(
+        self, cookies: List[Dict[str, Any]], profile_id: Union[str, None] = None
+    ) -> Response:
+        profile_id = self.profile_id if profile_id is None else profile_id
+        if profile_id is None:
+            raise ValueError("profile_id is None")
         response = requests.post(
             f"{API_URL}/browser/{self.profile_id}/cookies",
             headers=self.headers(),
