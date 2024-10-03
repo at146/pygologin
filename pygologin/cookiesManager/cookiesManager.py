@@ -19,25 +19,26 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 COOKIE_ROW_COLUMN_NAMES = [
-    'creation_utc',
-    'host_key',
-    'top_frame_site_key',
-    'name',
-    'value',
-    'encrypted_value',
-    'path',
-    'expires_utc',
-    'is_secure',
-    'is_httponly',
-    'last_access_utc',
-    'has_expires',
-    'is_persistent',
-    'priority',
-    'samesite',
-    'source_scheme',
-    'source_port',
-    'last_update_utc',
+    "creation_utc",
+    "host_key",
+    "top_frame_site_key",
+    "name",
+    "value",
+    "encrypted_value",
+    "path",
+    "expires_utc",
+    "is_secure",
+    "is_httponly",
+    "last_access_utc",
+    "has_expires",
+    "is_persistent",
+    "priority",
+    "samesite",
+    "source_scheme",
+    "source_port",
+    "last_update_utc",
 ]
+
 
 class CookiesManager:
     def __init__(self, *args, **kwargs):
@@ -140,20 +141,26 @@ class CookiesManager:
             cookies_rows = cookies_rows.fetchall()
             for row in cookies_rows:
                 row_data = dict(zip(COOKIE_ROW_COLUMN_NAMES, row))
-                cookies.append({
-                    'url': self.build_cookie_url(row_data['host_key'], row_data['is_secure'], row_data['path']),
-                    'domain': row_data['host_key'],
-                    'name': row_data['name'],
-                    'value': row_data['encrypted_value'],
-                    'path': row_data['path'],
-                    'sameSite': SAME_SITE[row_data['samesite']],
-                    'secure': bool(row_data['is_secure']),
-                    'httpOnly': bool(row_data['is_httponly']),
-                    'hostOnly': not row_data['host_key'].startswith('.'),
-                    'session': not row_data['is_persistent'],
-                    'expirationDate': self.ldap_to_unix(row_data['expires_utc']),
-                    'creationDate': self.ldap_to_unix(row_data['creation_utc']),
-                })
+                cookies.append(
+                    {
+                        "url": self.build_cookie_url(
+                            row_data["host_key"],
+                            row_data["is_secure"],
+                            row_data["path"],
+                        ),
+                        "domain": row_data["host_key"],
+                        "name": row_data["name"],
+                        "value": row_data["encrypted_value"],
+                        "path": row_data["path"],
+                        "sameSite": SAME_SITE[row_data["samesite"]],
+                        "secure": bool(row_data["is_secure"]),
+                        "httpOnly": bool(row_data["is_httponly"]),
+                        "hostOnly": not row_data["host_key"].startswith("."),
+                        "session": not row_data["is_persistent"],
+                        "expirationDate": self.ldap_to_unix(row_data["expires_utc"]),
+                        "creationDate": self.ldap_to_unix(row_data["creation_utc"]),
+                    }
+                )
         except Exception as error:
             log.exception("load_cookies_from_file %s", error)
             raise error

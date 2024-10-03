@@ -47,7 +47,7 @@ class GoLogin(object):
         self.cleaningLocalCookies: bool = options.get("cleaningLocalCookies", False)
         self.uploadCookiesToServer: bool = options.get("uploadCookiesToServer", False)
         self.writeCookiesFromServer: bool = options.get("writeCookiesFromServer", False)
-        self.restore_last_session = options.get('restore_last_session', False)
+        self.restore_last_session = options.get("restore_last_session", False)
         self.executablePath: str = ""
         self.is_cloud_headless: bool = options.get("is_cloud_headless", True)
         self.is_new_cloud_browser: bool = options.get("is_new_cloud_browser", True)
@@ -185,7 +185,7 @@ class GoLogin(object):
             params.append("--host-resolver-rules=" + hr_rules)
 
         if self.restore_last_session:
-            params.append('--restore-last-session')
+            params.append("--restore-last-session")
 
         for param in self.extra_params:
             params.append(param)
