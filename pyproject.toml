@@ -24,8 +24,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests",
-    "psutil",
+    "requests>=2,<3",
+    "psutil~=6.0.0",
 ]
 dynamic = ["version"]
 
