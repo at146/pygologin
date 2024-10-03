@@ -55,8 +55,32 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-            name: dist
-            path: dist
+          name: dist
+          path: dist
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  deploy:
+    name: Create release github with SHA256 and Artifacts
+    needs: publish
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Generate SHA256 files for each wheel
+        run: |
+          sha256sum dist/*.whl > checksums.txt
+          cat checksums.txt
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.whl 
+            checksums.txt

@@ -133,4 +133,5 @@ dmypy.json
 
 drafts/
 
+.idea
 tests/conftest.py
