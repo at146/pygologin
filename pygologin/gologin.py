@@ -380,13 +380,12 @@ class GoLogin(object):
         if profile_id is None:
             raise ValueError("profile_id is None")
 
-        data = json.loads(
-            requests.get(
-                API_URL + "/browser/" + profile_id, headers=self.headers()
-            ).content.decode("utf-8")
+        response = requests.get(
+            f"{API_URL}/browser/{profile_id}", headers=self.headers()
         )
+        data: Dict[str, Any] = response.json()
         if data.get("statusCode") == 404:
-            raise Exception(data.get("error") + ": " + data.get("message"))
+            raise Exception(f"{data.get('error')}:{data.get('message')}")
         return data
 
     def downloadProfileZip(self) -> None:
@@ -821,14 +820,19 @@ class GoLogin(object):
         for k, v in options.items():
             profile[k] = v
 
-        response = json.loads(
-            requests.post(
-                API_URL + "/browser", headers=self.headers(), json=profile
-            ).content.decode("utf-8")
+        response = requests.post(
+            f"{API_URL}/browser", headers=self.headers(), json=profile
         )
-        if response.get("statusCode") is not None:
-            raise ProtocolException(response)
-        return response.get("id")
+        data: Dict[str, Any] = response.json()
+
+        if data.get("statusCode") is not None:
+            raise ProtocolException(data)
+        
+        profile_id: Union[str, None] = data.get("id")
+        if profile_id is None:
+            raise ProtocolException(data)
+
+        return profile_id
 
     def delete(self, profile_id: Union[str, None] = None) -> None:
         profile_id = self.profile_id if profile_id is None else profile_id

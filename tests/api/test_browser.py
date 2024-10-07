@@ -5,7 +5,7 @@ import requests
 API_URL_BROWSER = "https://api.gologin.com/browser"
 
 
-class TestBrowserController:
+class TestBrowser:
     def headers(self, access_token: str) -> Dict[str, str]:
         return {
             "Authorization": "Bearer " + access_token,
@@ -44,3 +44,11 @@ class TestBrowserController:
             json=proxy,
         )
         assert response.ok is True
+
+    def test_getBrowserById(self, access_token: str, profile_id: str):
+        response = requests.get(
+            f"{API_URL_BROWSER}/{profile_id}",
+            headers=self.headers(access_token),
+        )
+        assert response.ok is True
+        assert "application/json" in response.headers.get("Content-Type", "")
