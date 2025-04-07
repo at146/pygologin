@@ -827,7 +827,7 @@ class GoLogin(object):
 
         if data.get("statusCode") is not None:
             raise ProtocolException(data)
-        
+
         profile_id: Union[str, None] = data.get("id")
         if profile_id is None:
             raise ProtocolException(data)

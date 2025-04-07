@@ -9,10 +9,10 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-    { name = "AlexName1", email = "at146@ya.ru" },
+    { name = "at146", email = "at146@ya.ru" },
 ]
 maintainers = [
-    { name = "AlexName1", email = "at146@ya.ru" },
+    { name = "at146", email = "at146@ya.ru" },
 ]
 keywords = [
     "gologin",
@@ -37,16 +37,16 @@ test = [
     "pytest~=8.3.2",
 ]
 dev = [
-    "ruff~=0.6.4",
+    "ruff~=0.11.0",
     "mypy~=1.11.2",
     "types-psutil~=6.0.0.20240901",
     "types-requests~=2.32.0.20240905",
 ]
 
 [project.urls]
-Homepage = "https://github.com/AlexName1/pygologin"
-Repository = "https://github.com/AlexName1/pygologin"
-Issues = "https://github.com/AlexName1/pygologin/issues"
+Homepage = "https://github.com/at146/pygologin"
+Repository = "https://github.com/at146/pygologin"
+Issues = "https://github.com/at146/pygologin/issues"
 
 [tool.mypy]
 exclude = ["example"]
