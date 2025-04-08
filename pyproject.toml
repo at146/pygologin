@@ -50,4 +50,4 @@ Repository = "https://github.com/at146/pygologin"
 Issues = "https://github.com/at146/pygologin/issues"
 
 [tool.mypy]
-exclude = ["example"]
+exclude = "example"
