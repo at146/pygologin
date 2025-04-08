@@ -147,12 +147,12 @@ class GoLogin(object):
         )
 
         if noteExtExist:
-            return
+            return  # type: ignore
         else:
             return pathToExt
 
     def spawnBrowser(self) -> str:
-        proxy = self.proxy
+        proxy = self.proxy  # type: ignore
         proxy_host = ""
         if proxy:
             if proxy.get("mode") is None or proxy.get("mode") == "geolocation":
@@ -167,8 +167,8 @@ class GoLogin(object):
             "--remote-debugging-port=" + str(self.port),
             "--user-data-dir=" + self.profile_path,
             "--password-store=basic",
-            "--tz=" + tz,
-            "--gologin-profile=" + self.profile_name,
+            "--tz=" + tz,  # type: ignore
+            "--gologin-profile=" + self.profile_name,  # type: ignore
             "--lang=en-US",
         ]
 
@@ -363,7 +363,7 @@ class GoLogin(object):
             )
 
     def getTimeZone(self) -> Dict[str, Any]:
-        proxy = self.proxy
+        proxy = self.proxy  # type: ignore
         if proxy:
             proxies = {
                 "http": self.formatProxyUrlPassword(proxy),
@@ -403,14 +403,14 @@ class GoLogin(object):
             "browserId": self.profile_id,
         }
 
-        data = requests.get(FILES_GATEWAY + "/download", headers=headers).content
+        data = requests.get(FILES_GATEWAY + "/download", headers=headers).content  # type: ignore
 
         if len(data) == 0:
             log.debug("data is 0 - creating empty profile")
             self.createEmptyProfile()
         else:
             with open(self.profile_zip_path, "wb") as f:
-                f.write(data)
+                f.write(data)  # type: ignore
 
         try:
             log.debug("extracting profile")
@@ -435,13 +435,13 @@ class GoLogin(object):
             # print('downloading profile direct')
             if self.profile_id is None:
                 raise ValueError("profile_id is None")
-            data = requests.get(
+            data = requests.get(  # type: ignore
                 API_URL + "/browser/" + self.profile_id, headers=self.headers()
             ).content
         else:
             # print('downloading profile s3')
             s3url = PROFILES_URL + s3path.replace(" ", "+")
-            data = requests.get(s3url).content
+            data = requests.get(s3url).content  # type: ignore
 
         if len(data) == 0:
             log.debug("data is 0 - creating fresh profile content")
@@ -449,7 +449,7 @@ class GoLogin(object):
         else:
             log.debug("data is not 0")
             with open(self.profile_zip_path, "wb") as f:
-                f.write(data)
+                f.write(data)  # type: ignore
 
         try:
             log.debug("extracting profile")
@@ -559,7 +559,7 @@ class GoLogin(object):
         )
         preferences["audioContext"] = {
             "enable": preferences.get("audioContextMode") != "off",
-            "noiseValue": preferences.get("audioContext").get("noise"),
+            "noiseValue": preferences.get("audioContext").get("noise"),  # type: ignore
         }
 
         preferences["webgl"] = {
@@ -594,7 +594,7 @@ class GoLogin(object):
             deviceScaleFactorCeil = math.ceil(devicePixelRatio or 3.5)
             deviceScaleFactor = devicePixelRatio
             if deviceScaleFactorCeil == devicePixelRatio:
-                deviceScaleFactor += 0.00000001
+                deviceScaleFactor += 0.00000001  # type: ignore
 
             preferences["mobile"] = {
                 "enable": True,
@@ -629,7 +629,7 @@ class GoLogin(object):
         # print('proxy=', proxy)
         if proxy and (proxy.get("mode") == "gologin" or proxy.get("mode") == "tor"):
             autoProxyServer = profile.get("autoProxyServer")
-            splittedAutoProxyServer = autoProxyServer.split("://")
+            splittedAutoProxyServer = autoProxyServer.split("://")  # type: ignore
             splittedProxyAddress = splittedAutoProxyServer[1].split(":")
             port = splittedProxyAddress[1]
 
@@ -701,7 +701,7 @@ class GoLogin(object):
             log.debug("COOKIES LENGTH %s", len(cookies))
             cookiesManagerInst.write_cookies_to_file(cookies)
         except Exception as e:
-            log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)
+            log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)  # type: ignore
             raise e
 
     def get_cookies(self, profile_id: Union[str, None] = None) -> Response:
@@ -753,11 +753,11 @@ class GoLogin(object):
         profile_options = self.getRandomFingerprint(options)
         navigator = options.get("navigator")
         if options.get("navigator"):
-            resolution = navigator.get("resolution")
-            userAgent = navigator.get("userAgent")
-            language = navigator.get("language")
-            hardwareConcurrency = navigator.get("hardwareConcurrency")
-            deviceMemory = navigator.get("deviceMemory")
+            resolution = navigator.get("resolution")  # type: ignore
+            userAgent = navigator.get("userAgent")  # type: ignore
+            language = navigator.get("language")  # type: ignore
+            hardwareConcurrency = navigator.get("hardwareConcurrency")  # type: ignore
+            deviceMemory = navigator.get("deviceMemory")  # type: ignore
 
             if resolution == "random" or userAgent == "random":
                 options.pop("navigator")
@@ -949,10 +949,10 @@ class GoLogin(object):
         if self.preferences.get("screenWidth") is None:
             self.profile = self.getProfile()
             self.preferences["screenWidth"] = int(
-                self.profile.get("navigator").get("resolution").split("x")[0]
+                self.profile.get("navigator").get("resolution").split("x")[0]  # type: ignore
             )
             self.preferences["screenHeight"] = int(
-                self.profile.get("navigator").get("resolution").split("x")[1]
+                self.profile.get("navigator").get("resolution").split("x")[1]  # type: ignore
             )
         width = self.preferences.get("screenWidth")
         height = self.preferences.get("screenHeight")
