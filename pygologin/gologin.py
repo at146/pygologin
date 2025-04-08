@@ -92,7 +92,10 @@ class GoLogin(object):
         self.pid = int()
 
     def __enter__(self):
-        self.start()
+        if self.profile_path:
+            self.start()
+        else:
+            raise ValueError("Profile path is not set")
         return self
 
     def __exit__(self, *args, **kwargs):

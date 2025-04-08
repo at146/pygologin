@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches:
-      - pygologin
+      - main
     paths:
       - ".github/workflows/tests.yml"
       - "pygologin/**"
