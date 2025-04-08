@@ -1,0 +1,61 @@
+repos:
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.6.13
+    hooks:
+      # Update the uv lockfile
+      - id: uv-lock
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: "check-added-large-files"
+      - id: "check-ast"
+      - id: "check-case-conflict"
+      - id: "check-docstring-first"
+      - id: "check-executables-have-shebangs"
+      - id: "check-illegal-windows-names"
+      - id: "check-json"
+      - id: "check-merge-conflict"
+      - id: "check-shebang-scripts-are-executable"
+      - id: "check-symlinks"
+      - id: "check-toml"
+      - id: "check-vcs-permalinks"
+      - id: "check-xml"
+      - id: "check-yaml"
+      - id: "debug-statements"
+      - id: "destroyed-symlinks"
+      - id: "detect-private-key"
+      - id: "end-of-file-fixer"
+      - id: "file-contents-sorter"
+      - id: "fix-byte-order-marker"
+      - id: "forbid-new-submodules"
+      - id: "forbid-submodules"
+      - id: "mixed-line-ending"
+      - id: "requirements-txt-fixer"
+      - id: "sort-simple-yaml"
+      - id: "trailing-whitespace"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.11.4'
+    hooks:
+      - id: ruff
+        name: ruff
+        description: "Run 'ruff' for extremely fast Python linting"
+        entry: ruff check --force-exclude
+        language: python
+        types_or: [ python, pyi ]
+        args: [ ]
+        require_serial: true
+        additional_dependencies: [ ]
+        minimum_pre_commit_version: "2.9.2"
+      - id: ruff-format
+        name: ruff-format
+        description: "Run 'ruff format' for extremely fast Python formatting"
+        entry: ruff format --force-exclude
+        language: python
+        types_or: [ python, pyi ]
+        args: [ ]
+        require_serial: true
+        additional_dependencies: [ ]
+        minimum_pre_commit_version: "2.9.2"

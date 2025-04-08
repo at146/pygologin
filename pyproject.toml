@@ -9,10 +9,10 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-    { name = "at146", email = "at146@ya.ru" },
+    { name = "Alex Tarasov", email = "at146@ya.ru" },
 ]
 maintainers = [
-    { name = "at146", email = "at146@ya.ru" },
+    { name = "Alex Tarasov", email = "at146@ya.ru" },
 ]
 keywords = [
     "gologin",
@@ -41,6 +41,7 @@ dev = [
     "mypy>=1.11.2,<1.16.0",
     "types-psutil>=6.0.0.20240901,<7.0.1.0",
     "types-requests~=2.32.0.20240905",
+    "pre-commit>=3.5.0,<4.0",
 ]
 
 [project.urls]
