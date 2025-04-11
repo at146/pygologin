@@ -256,7 +256,8 @@ class GoLogin(object):
     def commitProfile(self) -> None:
         log.debug("commitProfile")
         zipf = zipfile.ZipFile(self.profile_zip_path_upload, "w", zipfile.ZIP_DEFLATED)
-        self.zipdir(self.profile_path, zipf)
+        self.zipdir(self.profile_default_folder_path, zipf)
+        zipf.writestr("First Run", "")
         zipf.close()
 
         if self.access_token is None:
