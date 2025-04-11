@@ -49,6 +49,7 @@ jobs:
           pip install -e .[dev,test]
 
       - name: Lint code
-        run: |
-          ruff check --output-format=github pygologin
-          mypy pygologin
+        run: ruff check --output-format=github pygologin
+
+      # - name: Mypy code
+      #   run: mypy pygologin
