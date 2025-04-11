@@ -106,6 +106,7 @@ class GoLogin(object):
         if self.profile_id is None:
             return
         self.profile_path = os.path.join(self.tmpdir, "gologin_" + self.profile_id)
+        self.profile_default_folder_path = os.path.join(self.profile_path, "Default")
         self.profile_zip_path = os.path.join(
             self.tmpdir, "gologin_" + self.profile_id + ".zip"
         )
@@ -944,19 +945,6 @@ class GoLogin(object):
             json=proxy,
         )
         return response
-
-    async def normalizePageView(self, page) -> None:
-        if self.preferences.get("screenWidth") is None:
-            self.profile = self.getProfile()
-            self.preferences["screenWidth"] = int(
-                self.profile.get("navigator").get("resolution").split("x")[0]  # type: ignore
-            )
-            self.preferences["screenHeight"] = int(
-                self.profile.get("navigator").get("resolution").split("x")[1]  # type: ignore
-            )
-        width = self.preferences.get("screenWidth")
-        height = self.preferences.get("screenHeight")
-        await page.setViewport({"width": width, "height": height})
 
 
 def getRandomPort() -> int:

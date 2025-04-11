@@ -16,7 +16,6 @@ async def main():
         browserURL="http://" + debugger_address, defaultViewport=None
     )
     page = await browser.newPage()
-    await gl.normalizePageView(page)
     await page.goto("https://gologin.com")
     await page.screenshot({"path": "gologin.png"})
     await browser.close()
