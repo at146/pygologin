@@ -51,3 +51,4 @@ Issues = "https://github.com/at146/pygologin/issues"
 
 [tool.mypy]
 exclude = "example"
+strict = true

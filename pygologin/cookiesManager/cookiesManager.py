@@ -41,17 +41,17 @@ COOKIE_ROW_COLUMN_NAMES = [
 
 
 class CookiesManager:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.profile_id = kwargs.get("profile_id")
         self.tmpdir = kwargs.get("tmpdir")
 
-    def get_db(self):
+    def get_db(self) -> sqlite3.Connection:
         database = self.get_cookies_file_path()
         log.debug("FILEPATH %s", database)
         return sqlite3.connect(database=database)
 
     def get_chunked_insert_values(
-        self, cookies_arr: List[dict]
+        self, cookies_arr: List[Dict]
     ) -> List[Tuple[str, List]]:
         today_unix = int(datetime.datetime.now().timestamp())
         chunked_cookies_arr = [
@@ -234,7 +234,7 @@ class CookiesManager:
 
         return base_cookies_file_path
 
-    def write_cookies_to_file(self, cookies):
+    def write_cookies_to_file(self, cookies) -> None:
         log.debug("write_cookies_to_file")
         result_cookies = [
             {"value": base64.b64encode(cookie["value"].encode()), **cookie}

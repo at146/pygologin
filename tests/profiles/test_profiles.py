@@ -5,7 +5,7 @@ PROFILES_URL = "https://gprofiles-new.gologin.com/"
 
 
 class TestProfiles:
-    def test_uploadEmptyProfile(self):
+    def test_uploadEmptyProfile(self) -> None:
         response = requests.get(f"{PROFILES_URL}/zero_profile.zip")
         assert response.ok is True
         assert "application/zip" in response.headers.get("Content-Type", "")

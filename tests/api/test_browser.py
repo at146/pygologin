@@ -12,7 +12,7 @@ class TestBrowser:
             "User-Agent": "Selenium-API",
         }
 
-    def test_getBrowserCookies(self, access_token: str, profile_id: str):
+    def test_getBrowserCookies(self, access_token: str, profile_id: str) -> None:
         response = requests.get(
             f"{API_URL_BROWSER}/{profile_id}/cookies",
             headers=self.headers(access_token),
@@ -24,7 +24,7 @@ class TestBrowser:
 
     def test_postBrowserCookies(
         self, access_token: str, profile_id: str, cookies: List[Dict[str, Any]]
-    ):
+    ) -> None:
         response = requests.post(
             f"{API_URL_BROWSER}/{profile_id}/cookies",
             headers=self.headers(access_token),
@@ -37,7 +37,7 @@ class TestBrowser:
         access_token: str,
         profile_id: str,
         proxy: Dict[str, Union[str, int]] = {"mode": "none"},
-    ):
+    ) -> None:
         response = requests.patch(
             f"{API_URL_BROWSER}/{profile_id}/proxy",
             headers=self.headers(access_token),
@@ -45,7 +45,7 @@ class TestBrowser:
         )
         assert response.ok is True
 
-    def test_getBrowserById(self, access_token: str, profile_id: str):
+    def test_getBrowserById(self, access_token: str, profile_id: str) -> None:
         response = requests.get(
             f"{API_URL_BROWSER}/{profile_id}",
             headers=self.headers(access_token),

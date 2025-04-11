@@ -98,7 +98,7 @@ class GoLogin(object):
             raise ValueError("Profile path is not set")
         return self
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, *args, **kwargs) -> None:
         self.stop()
 
     def setProfileId(self, profile_id: Union[str, None]) -> None:
@@ -226,12 +226,9 @@ class GoLogin(object):
                     continue
                 if stat.S_ISSOCK(os.stat(path).st_mode):
                     continue
-                try:
-                    ziph.write(path, path.replace(self.profile_path, ""))
-                except Exception:
-                    continue
+                ziph.write(path, path.replace(self.profile_path, ""))
 
-    def waitUntilProfileUsing(self, try_count=0) -> None:
+    def waitUntilProfileUsing(self, try_count: int = 0) -> None:
         if try_count > 10:
             return
         time.sleep(1)

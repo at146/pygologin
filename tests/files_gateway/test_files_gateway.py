@@ -13,7 +13,7 @@ class TestFilesGateway:
             "browserId": profile_id,
         }
 
-    def test_downloadProfileZip(self, access_token: str, profile_id: str):
+    def test_downloadProfileZip(self, access_token: str, profile_id: str) -> None:
         response = requests.get(
             f"{FILES_GATEWAY}/download",
             headers=self.headers(access_token, profile_id),
