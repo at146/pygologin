@@ -183,7 +183,7 @@ class GoLogin(object):
                 params.append(extToParams)
 
         if proxy:
-            hr_rules = '"MAP * 0.0.0.0 , EXCLUDE %s"' % (proxy_host)
+            hr_rules = "MAP * 0.0.0.0 , EXCLUDE %s" % (proxy_host)
             params.append("--proxy-server=" + proxy)
             params.append("--host-resolver-rules=" + hr_rules)
 
