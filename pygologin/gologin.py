@@ -98,7 +98,7 @@ class GoLogin(object):
             raise ValueError("Profile path is not set")
         return self
 
-    def __exit__(self, *args, **kwargs) -> None:
+    def __exit__(self) -> None:
         self.stop()
 
     def setProfileId(self, profile_id: Union[str, None]) -> None:
@@ -753,6 +753,14 @@ class GoLogin(object):
                 API_URL + "/browser/v2", headers=self.headers()
             ).content.decode("utf-8")
         )
+
+    def createProfileRandomFingerprint(self, options: Dict[str, Any] = {}):
+        response = json.loads(
+            requests.post(
+                API_URL + "/browser/quick", headers=self.headers(), json=options
+            ).content.decode("utf-8")
+        )
+        return response
 
     def create(self, options: Dict[str, Any] = {}) -> str:
         profile_options = self.getRandomFingerprint(options)
