@@ -151,12 +151,12 @@ class GoLogin(object):
         )
 
         if noteExtExist:
-            return  # type: ignore
+            return
         else:
             return pathToExt
 
     def spawnBrowser(self) -> str:
-        proxy = self.proxy  # type: ignore
+        proxy = self.proxy
         proxy_host = ""
         if proxy:
             if proxy.get("mode") is None or proxy.get("mode") == "geolocation":
@@ -171,8 +171,8 @@ class GoLogin(object):
             "--remote-debugging-port=" + str(self.port),
             "--user-data-dir=" + self.profile_path,
             "--password-store=basic",
-            "--tz=" + tz,  # type: ignore
-            "--gologin-profile=" + self.profile_name,  # type: ignore
+            "--tz=" + tz,
+            "--gologin-profile=" + self.profile_name,
             "--lang=en-US",
         ]
 
@@ -219,7 +219,7 @@ class GoLogin(object):
             return self.spawnBrowser()
         return profile_path
 
-    def zipdir(self, path, ziph) -> None:
+    def zipdir(self, path: str, ziph: zipfile.ZipFile) -> None:
         for root, dirs, files in os.walk(path):
             for file in files:
                 path = os.path.join(root, file)
@@ -270,12 +270,15 @@ class GoLogin(object):
             "browserId": self.profile_id,
         }
 
-        data = requests.put(
+        response = requests.put(
             FILES_GATEWAY + "/upload",
             data=open(self.profile_zip_path_upload, "rb"),
             headers=headers,
         )
-        log.debug("commitProfile completed %s", data)
+        if response.ok:
+            log.debug("commitProfile completed")
+        else:
+            log.error("commitProfile error")
 
     def commitProfileOld(self) -> None:
         zipf = zipfile.ZipFile(self.profile_zip_path_upload, "w", zipfile.ZIP_DEFLATED)
@@ -365,7 +368,7 @@ class GoLogin(object):
             )
 
     def getTimeZone(self) -> Dict[str, Any]:
-        proxy = self.proxy  # type: ignore
+        proxy = self.proxy
         if proxy:
             proxies = {
                 "http": self.formatProxyUrlPassword(proxy),
@@ -405,14 +408,14 @@ class GoLogin(object):
             "browserId": self.profile_id,
         }
 
-        data = requests.get(FILES_GATEWAY + "/download", headers=headers).content  # type: ignore
+        data = requests.get(FILES_GATEWAY + "/download", headers=headers).content
 
         if len(data) == 0:
             log.debug("data is 0 - creating empty profile")
             self.createEmptyProfile()
         else:
             with open(self.profile_zip_path, "wb") as f:
-                f.write(data)  # type: ignore
+                f.write(data)
 
         try:
             log.debug("extracting profile")
@@ -437,13 +440,13 @@ class GoLogin(object):
             # print('downloading profile direct')
             if self.profile_id is None:
                 raise ValueError("profile_id is None")
-            data = requests.get(  # type: ignore
+            data = requests.get(
                 API_URL + "/browser/" + self.profile_id, headers=self.headers()
             ).content
         else:
             # print('downloading profile s3')
             s3url = PROFILES_URL + s3path.replace(" ", "+")
-            data = requests.get(s3url).content  # type: ignore
+            data = requests.get(s3url).content
 
         if len(data) == 0:
             log.debug("data is 0 - creating fresh profile content")
@@ -451,7 +454,7 @@ class GoLogin(object):
         else:
             log.debug("data is not 0")
             with open(self.profile_zip_path, "wb") as f:
-                f.write(data)  # type: ignore
+                f.write(data)
 
         try:
             log.debug("extracting profile")
@@ -561,7 +564,7 @@ class GoLogin(object):
         )
         preferences["audioContext"] = {
             "enable": preferences.get("audioContextMode") != "off",
-            "noiseValue": preferences.get("audioContext").get("noise"),  # type: ignore
+            "noiseValue": preferences.get("audioContext").get("noise"),
         }
 
         preferences["webgl"] = {
@@ -596,7 +599,7 @@ class GoLogin(object):
             deviceScaleFactorCeil = math.ceil(devicePixelRatio or 3.5)
             deviceScaleFactor = devicePixelRatio
             if deviceScaleFactorCeil == devicePixelRatio:
-                deviceScaleFactor += 0.00000001  # type: ignore
+                deviceScaleFactor += 0.00000001
 
             preferences["mobile"] = {
                 "enable": True,
@@ -631,7 +634,7 @@ class GoLogin(object):
         # print('proxy=', proxy)
         if proxy and (proxy.get("mode") == "gologin" or proxy.get("mode") == "tor"):
             autoProxyServer = profile.get("autoProxyServer")
-            splittedAutoProxyServer = autoProxyServer.split("://")  # type: ignore
+            splittedAutoProxyServer = autoProxyServer.split("://")
             splittedProxyAddress = splittedAutoProxyServer[1].split(":")
             port = splittedProxyAddress[1]
 
@@ -703,7 +706,7 @@ class GoLogin(object):
             log.debug("COOKIES LENGTH %s", len(cookies))
             cookiesManagerInst.write_cookies_to_file(cookies)
         except Exception as e:
-            log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)  # type: ignore
+            log.exception("downloadCookies exc %s %s", e, e.__traceback__.tb_lineno)
             raise e
 
     def get_cookies(self, profile_id: Union[str, None] = None) -> Response:
@@ -755,11 +758,11 @@ class GoLogin(object):
         profile_options = self.getRandomFingerprint(options)
         navigator = options.get("navigator")
         if options.get("navigator"):
-            resolution = navigator.get("resolution")  # type: ignore
-            userAgent = navigator.get("userAgent")  # type: ignore
-            language = navigator.get("language")  # type: ignore
-            hardwareConcurrency = navigator.get("hardwareConcurrency")  # type: ignore
-            deviceMemory = navigator.get("deviceMemory")  # type: ignore
+            resolution = navigator.get("resolution")
+            userAgent = navigator.get("userAgent")
+            language = navigator.get("language")
+            hardwareConcurrency = navigator.get("hardwareConcurrency")
+            deviceMemory = navigator.get("deviceMemory")
 
             if resolution == "random" or userAgent == "random":
                 options.pop("navigator")
